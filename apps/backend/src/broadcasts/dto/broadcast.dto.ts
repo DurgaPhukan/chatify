@@ -13,7 +13,7 @@ import { Type } from 'class-transformer';
 import { IsObjectId } from '../validators/object-id.validator'; // Assuming you have a custom ObjectId validator.
 
 export class CreateBroadcastDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsObjectId()
   id: Types.ObjectId;
 

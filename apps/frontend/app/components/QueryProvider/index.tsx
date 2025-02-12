@@ -1,5 +1,4 @@
 "use client"
-import BroadcastsPage from "@/app/(root)/broadcasts/page";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from "react";
 

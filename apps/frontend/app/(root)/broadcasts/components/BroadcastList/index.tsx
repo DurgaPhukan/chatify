@@ -20,7 +20,7 @@ const fetchChatRooms = async (): Promise<ChatRoom[]> => {
   const response = await axios.get("http://localhost:4000/broadcasts", {
     headers: {
       // Authorization: `Bearer ${token}`, // Add auth token in the request
-      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbmpveW9mZmljYWxwQGdtYWlsLmNvbSIsInN1YiI6IjY3YWM3YTIwOTMyZDIwZTU4MzcyNjUzOSIsImlhdCI6MTczOTM2MTEyOCwiZXhwIjoxNzM5MzY0NzI4fQ.3jywXeFcWHfdTiO5YQtKJ07auMdhbAaZlytdHqslflU"
+      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbmpveW9mZmljYWxwQGdtYWlsLmNvbSIsInN1YiI6IjY3YWNiNjA4YWIxMjBjYWU3NWI2MGVkNiIsImlhdCI6MTczOTM4NDIyNSwiZXhwIjoxNzM5Mzg3ODI1fQ.P3jw3QkK61SjWSVfsu1xPHUVypHH1jMUZl0Vu6gwvXQ"
     },
   });
 
