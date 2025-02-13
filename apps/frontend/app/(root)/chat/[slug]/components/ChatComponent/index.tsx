@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -11,11 +12,16 @@ interface Message {
 }
 
 const ChatPage = () => {
+
+  const params = useParams();
+  const { slug } = params;
+  console.log("this is slug", slug)
+
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
   const [creatorId, setCreatorId] = useState<string>("67ad99b7d94c1312eeb0c34f"); // Example creatorId
-  const [roomId, setRoomId] = useState<string>("67ad99b7d94c1312eeb0c350"); // Example roomId
+  const [roomId, setRoomId] = useState<string>(slug as string || "67ad99b7d94c1312eeb0c350"); // Example roomId
 
   // Initialize Socket.IO connection
   useEffect(() => {
@@ -24,26 +30,33 @@ const ChatPage = () => {
     });
     setSocket(newSocket);
 
-    // Cleanup on unmount
     return () => {
       newSocket.disconnect();
     };
   }, []);
 
-  // Listen for incoming messages
+  // Join room and load chat history
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !roomId) return;
 
-    const handleReceiveMessage = (newMessage: Message) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    };
+    // Join the room
+    socket.emit("joinRoom", { roomId });
 
-    socket.on("newMessage", handleReceiveMessage);
+    // Listen for chat history
+    socket.on("chatHistory", (chatHistory: Message[]) => {
+      setMessages(chatHistory); // Load initial messages
+    });
+
+    // Listen for new messages
+    socket.on("newMessage", (newMessage: Message) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]); // Append new messages
+    });
 
     return () => {
-      socket.off("newMessage", handleReceiveMessage);
+      socket.off("chatHistory");
+      socket.off("newMessage");
     };
-  }, [socket]);
+  }, [socket, roomId]);
 
   // Send a message
   const sendMessage = () => {
@@ -53,7 +66,6 @@ const ChatPage = () => {
         creatorId,
         roomId,
       };
-      console.log("=============>>>", payload)
       socket.emit("sendMessage", payload);
       setMessage("");
     }
@@ -63,8 +75,8 @@ const ChatPage = () => {
     <div className="flex flex-col h-screen">
       {/* Chat messages */}
       <div className="flex-grow overflow-y-auto bg-gray-100 p-4">
-        {messages.map((msg) => (
-          <div key={msg.id} className="p-2 my-2 bg-white shadow rounded">
+        {messages.map((msg, index) => (
+          <div key={msg.id || msg.message + index} className="p-2 my-2 bg-white shadow rounded">
             <strong>{msg.creatorId}:</strong> {msg.message}
             <div className="text-xs text-gray-500">
               {new Date(msg.createdAt).toLocaleTimeString()}

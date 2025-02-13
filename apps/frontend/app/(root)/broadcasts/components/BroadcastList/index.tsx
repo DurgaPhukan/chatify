@@ -5,29 +5,35 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { getAuthToken } from "@/app/utils/getAuthToken";
+import { useRouter } from 'next/navigation'
 
 type ChatRoom = {
-  id: string;
+  _id: string;
   title: string;
   description: string;
+  creatorId: string;
+  startTime: string;
+  endTime: string;
 };
 
 const fetchChatRooms = async (): Promise<ChatRoom[]> => {
   const token = getAuthToken()
-  // if (!token) {
-  //   throw new Error("Authorization token is missing");
-  // }
+  if (!token) {
+    throw new Error("Authorization token is missing");
+  }
   const response = await axios.get("http://localhost:4000/broadcasts", {
     headers: {
-      // Authorization: `Bearer ${token}`, // Add auth token in the request
-      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbmpveW9mZmljYWxwQGdtYWlsLmNvbSIsInN1YiI6IjY3YWNiNjA4YWIxMjBjYWU3NWI2MGVkNiIsImlhdCI6MTczOTM4NDIyNSwiZXhwIjoxNzM5Mzg3ODI1fQ.P3jw3QkK61SjWSVfsu1xPHUVypHH1jMUZl0Vu6gwvXQ"
+      Authorization: `Bearer ${token}`,
+      // Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbmpveW9mZmljYWxwQGdtYWlsLmNvbSIsInN1YiI6IjY3YWNiNjA4YWIxMjBjYWU3NWI2MGVkNiIsImlhdCI6MTczOTQzNzk4OCwiZXhwIjoxNzM5NDQxNTg4fQ.feZmozQKR8jxgqgLYTssd5ulpaewynCIm_jG-JnQ8D4"
     },
   });
-
+  console.log("ressss", response)
   return response.data;
 };
 
 const BroadcastList: React.FC = () => {
+  const router = useRouter()
+
   const {
     data: chatRooms,
     isLoading,
@@ -40,6 +46,7 @@ const BroadcastList: React.FC = () => {
   if (isLoading) {
     return <div className="text-center mt-10">Loading chat rooms...</div>;
   }
+  console.log("These are chat rooms", chatRooms)
 
   if (error instanceof Error) {
     return (
@@ -57,20 +64,20 @@ const BroadcastList: React.FC = () => {
     <div className="max-w-7xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-semibold text-center mb-6">Available Chat Rooms</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {chatRooms.map((room) => (
+        {chatRooms.map((room, index) => (
           <Card
-            key={room.id}
+            key={room._id + index}
             className="shadow-lg hover:shadow-xl transition-shadow duration-300 py-4"
           >
             <CardContent>
               <h2 className="text-xl font-bold mb-2">{room.title}</h2>
               <p className="text-gray-600 mb-4">{room.description}</p>
-              <Button className="w-full">Join Chat</Button>
+              <Button onClick={() => router.push(`/chat/${room._id}`)} className="w-full">Join Chat</Button>
             </CardContent>
           </Card>
         ))}
       </div>
-    </div>
+    </div >
   );
 };
 
