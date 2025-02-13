@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { BroadcastsModule } from './broadcasts/broadcasts.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { NotificationsGateway } from './notifications/notifications.gateway';
+import { ChatModule } from './chat/chat.module';
 
 
 @Module({
@@ -21,6 +22,7 @@ import { NotificationsGateway } from './notifications/notifications.gateway';
     AuthModule,
     BroadcastsModule,
     NotificationsModule,
+    ChatModule
   ],
   controllers: [],
   providers: [NotificationsGateway],

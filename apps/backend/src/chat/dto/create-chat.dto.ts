@@ -1,8 +1,7 @@
-// src/chat/dto/create-chat.dto.ts
-import { IsNotEmpty, IsString, IsOptional, IsMongoId } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsMongoId, IsArray, ArrayUnique } from 'class-validator';
 
 export class CreateChatDto {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Message field is required' })
   @IsString()
   message: string;
 
@@ -15,8 +14,10 @@ export class CreateChatDto {
   replyId?: string;
 
   @IsOptional()
-  @IsMongoId()
-  mentionId?: string;
+  @IsArray()
+  @ArrayUnique()
+  @IsMongoId({ each: true })
+  mentionIds?: string[];
 
   @IsNotEmpty()
   @IsMongoId()

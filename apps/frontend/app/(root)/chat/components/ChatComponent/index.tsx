@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -13,12 +14,13 @@ const ChatPage = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
+  const [creatorId, setCreatorId] = useState<string>("67ad99b7d94c1312eeb0c34f"); // Example creatorId
+  const [roomId, setRoomId] = useState<string>("67ad99b7d94c1312eeb0c350"); // Example roomId
 
   // Initialize Socket.IO connection
   useEffect(() => {
     const newSocket = io("http://localhost:4000", {
       withCredentials: true,
-      transports: ["websocket"], // Force WebSocket transport
     });
     setSocket(newSocket);
 
@@ -46,7 +48,13 @@ const ChatPage = () => {
   // Send a message
   const sendMessage = () => {
     if (socket && message.trim() !== "") {
-      socket.emit("sendMessage", { message });
+      const payload = {
+        message,
+        creatorId,
+        roomId,
+      };
+      console.log("=============>>>", payload)
+      socket.emit("sendMessage", payload);
       setMessage("");
     }
   };
