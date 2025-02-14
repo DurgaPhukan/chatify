@@ -62,6 +62,9 @@ const ChatPage = () => {
   // Initialize Socket.IO connection
   useEffect(() => {
     const newSocket = io("http://localhost:4000", {
+      query: {
+        userId: creatorId
+      },
       withCredentials: true,
     });
     setSocket(newSocket);

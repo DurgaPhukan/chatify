@@ -3,9 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { BroadcastsModule } from './broadcasts/broadcasts.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { NotificationsGateway } from './notifications/notifications.gateway';
 import { ChatModule } from './chat/chat.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 
 @Module({
@@ -25,6 +24,6 @@ import { ChatModule } from './chat/chat.module';
     ChatModule
   ],
   controllers: [],
-  providers: [NotificationsGateway],
+  providers: [],
 })
 export class AppModule { }

@@ -37,6 +37,6 @@ export class Chat {
 export const ChatSchema = SchemaFactory.createForClass(Chat);
 
 // Indexes
-ChatSchema.index({ creatorId: 1 });
-ChatSchema.index({ roomId: 1 });
-ChatSchema.index({ createdAt: 1 });
+// ChatSchema.index({ creatorId: 1 });
+// ChatSchema.index({ roomId: 1 });
+// ChatSchema.index({ createdAt: 1 });
