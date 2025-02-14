@@ -48,7 +48,6 @@ const BroadcastList: React.FC = () => {
       </h3>
     </div>;
   }
-  console.log("These are chat rooms", chatRooms)
 
   if (error instanceof Error) {
     return (

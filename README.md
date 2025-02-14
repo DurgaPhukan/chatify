@@ -1,84 +1,118 @@
-# Turborepo starter
+# Chatify
 
-This Turborepo starter is maintained by the Turborepo core team.
+Chatify is a modern real-time chat application designed to provide seamless communication and an exceptional user experience. The application comes with features like multi-people chat rooms, broadcast channel creation, and real-time messaging. It uses cutting-edge technologies such as WebSocket, MongoDB, NestJS, and Next.js to deliver optimal performance and scalability.
 
-## Using this example
+---
 
-Run the following command:
+## Features
 
-```sh
-npx create-turbo@latest
-```
+### Key Functionalities
+- **Real-Time Communication**: Instant messaging powered by WebSocket for a seamless experience.
+- **Broadcast Channels**: Users can create broadcast channels, invite participants, and manage access.
+- **Multi-People Chat Rooms**: Allows multiple users to communicate simultaneously.
+- **Chat History**: Persistent chat history to revisit past conversations.
+- **Custom Authentication**: Secure and efficient authentication system.
+- **Youthful UI**: Modern, smooth, and visually appealing interface.
 
-## What's inside?
+### Technical Advantages
+- **Next.js & Tailwind**: Combines server-side rendering and modern UI design for better performance and SEO.
+- **NestJS Backend**: Ensures better type safety, structured code, and high performance.
+- **MongoDB**: Scalable database for efficient data management.
+- **WebSocket Communication**: Real-time interactions for improved user engagement.
+- **Future-Proof Design**: Schema and architecture designed for scalability and future enhancements.
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
+## Installation
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+Follow these steps to set up and run Chatify locally:
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Prerequisites
+- **Node.js**: Ensure you have Node.js installed.
+- **MongoDB Atlas**: Setup a MongoDB Atlas account or use a local MongoDB instance.
 
-### Utilities
+### Steps
 
-This Turborepo has some additional tools already setup for you:
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd chatify
+   ```
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+2. Install dependencies in the main folder:
+   ```bash
+   npm install
+   ```
 
-### Build
+3. Navigate to `/app/frontend` and install dependencies:
+   ```bash
+   cd app/frontend
+   npm install
+   ```
 
-To build all apps and packages, run the following command:
+4. Navigate to `/app/backend` and install dependencies:
+   ```bash
+   cd app/backend
+   npm install
+   ```
 
-```
-cd my-turborepo
-pnpm build
-```
+---
 
-### Develop
+## Running the Application
 
-To develop all apps and packages, run the following command:
+### Frontend
+1. Add a `.env` file in `/app/frontend` with the following content:
+   ```env
+   NEXT_PUBLIC_BACK_END_URL=http://localhost:4000
+   ```
+2. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
 
-```
-cd my-turborepo
-pnpm dev
-```
+### Backend
+1. Add a `.env` file in `/app/backend` with the following content:
+   ```env
+   PORT=4000
+   MONGO_URI="mongodb+srv://username:password@cluster0.nb87q.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+   JWT_SECRET="secret"
+   FRONTEND_URL=http://localhost:3000
+   ```
+2. Start the backend server:
+   ```bash
+   npm start
+   ```
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## Advantages
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- **Seamless Real-Time Communication**: Uses WebSocket for real-time interactions, ensuring a smooth user experience.
+- **Scalability**: Designed with scalability in mind, perfect for handling a large user base.
+- **Modern UI**: Built with Tailwind and Next.js, providing a visually stunning and responsive interface.
+- **Secure Authentication**: Robust custom authentication system with JWT for secure user sessions.
+- **Future-Ready**: Flexible schema design and modular code structure for easy expansion.
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+---
 
-```
-cd my-turborepo
-npx turbo login
-```
+## Technologies Used
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+- **Frontend**: Next.js, Tailwind CSS
+- **Backend**: NestJS, WebSocket, MongoDB
+- **Database**: MongoDB Atlas
+- **Authentication**: JWT (JSON Web Tokens)
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+---
 
-```
-npx turbo link
-```
+## Contributing
+We welcome contributions to improve Chatify! Feel free to submit issues, feature requests, or pull requests.
 
-## Useful Links
+---
 
-Learn more about the power of Turborepo:
+## License
+This project is licensed under the MIT License.
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+---
+
+## Contact
+For any questions or suggestions, please contact us at [your-email@example.com].

@@ -42,27 +42,24 @@ const AuthPage: React.FC = () => {
 
   }, [router]);
 
-  // Login mutation
   const loginMutation = useMutation({
     mutationFn: (data: LoginFormData) =>
       axios.post(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/login`, data),
     onSuccess: (response) => {
       saveAuthToken(response.data.accessToken);
-      router.push("/broadcasts");
+      window.location.href = "/broadcasts"
     },
   });
 
-  // Register mutation
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
       axios.post(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/register`, data),
     onSuccess: (response) => {
-      saveAuthToken(response.data.token);
-      router.push("/broadcasts");
+      console.log("User Created Successfully", response)
+      setIsLogin(true)
     },
   });
 
-  // Handle Login
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);

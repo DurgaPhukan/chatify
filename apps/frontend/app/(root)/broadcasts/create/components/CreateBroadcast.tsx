@@ -1,13 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { getAuthToken } from "@/app/utils/getAuthToken";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,15 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { format } from "date-fns";
-import { getAuthToken } from "@/app/utils/getAuthToken";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import Combobox from "./ComboBox";
 import DateTimePicker from "./DateTimePicker";
 
@@ -65,7 +63,6 @@ const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
         search: searchQuery || undefined
       }
     });
-    console.log("resss", response)
     return response.data.data.users;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
