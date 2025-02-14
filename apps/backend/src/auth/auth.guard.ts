@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService, // Use ConfigService for dynamic secret
+    private readonly configService: ConfigService,
   ) { }
 
   canActivate(context: ExecutionContext): boolean {
@@ -28,7 +28,6 @@ export class JwtAuthGuard implements CanActivate {
         secret: this.configService.get<string>(process.env.JWT_SECRET),
       });
 
-      // Attach the decoded token to the request object for downstream use
       request.user = decodedToken;
 
       return true;

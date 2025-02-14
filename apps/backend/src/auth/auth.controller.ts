@@ -67,12 +67,12 @@ export class AuthController {
     };
   }
 
-  @Get('users') // Change to @Get for query parameters
+  @Get('users')
   @HttpCode(HttpStatus.OK)
   async getUsers(
     @Query('page') page: number,
     @Query('limit') limit: number,
-    @Query('search') search?: string, // Make search optional
+    @Query('search') search?: string,
   ) {
     console.log('PPP', page, limit, search);
     const { users, total } = await this.authService.getUsers(page, limit, search);
