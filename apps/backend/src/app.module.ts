@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { BroadcastsModule } from './broadcasts/broadcasts.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { CombinedSocketGateway } from './socket/socket.gateway';
+import { SharedSocketModule } from './socket/socket.module';
 
 
 @Module({
@@ -22,10 +22,11 @@ import { CombinedSocketGateway } from './socket/socket.gateway';
     AuthModule,
     BroadcastsModule,
     NotificationsModule,
-    ChatModule
+    ChatModule,
+    SharedSocketModule
   ],
   controllers: [],
-  providers: [CombinedSocketGateway],
-  exports: [CombinedSocketGateway],
+  providers: [],
+  // exports: [CombinedSocketGateway],
 })
 export class AppModule { }
