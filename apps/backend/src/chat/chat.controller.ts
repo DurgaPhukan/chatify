@@ -1,4 +1,3 @@
-// src/chat/chat.controller.ts
 import { Controller, Get, Param } from '@nestjs/common';
 import { ChatService } from './chat.service';
 

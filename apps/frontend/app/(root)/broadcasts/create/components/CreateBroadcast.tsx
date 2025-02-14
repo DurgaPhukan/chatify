@@ -1,8 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,9 +22,17 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { CalendarIcon, Clock } from "lucide-react";
 import { getAuthToken } from "@/app/utils/getAuthToken";
+import { cn } from "@/lib/utils";
+import Combobox from "./ComboBox";
+import DateTimePicker from "./DateTimePicker";
+
+// Types
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 type BroadcastData = {
   title: string;
@@ -32,11 +40,40 @@ type BroadcastData = {
   startTime: Date | null;
   endTime: Date | null;
   visibility: string;
+  creatorId: string
+  members?: string[]
 };
 
-type BroadcastResponse = {
-  id: string;
-} & BroadcastData;
+// Combobox component to replace Command component
+
+
+// API function to fetch users
+const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error("Authorization token is missing");
+  }
+
+  try {
+    const response = await axios.get(`${process.env.BACK_END_URL}/auth/users`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      params: {
+        page: 1,
+        limit: 20,
+        search: searchQuery || undefined // Only send `search` if it has a value
+      }
+    });
+    console.log("resss", response)
+    return response.data.data.users; // Adjust response path if necessary
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 400) {
+      console.error('Invalid pagination parameters:', error.response.data);
+    }
+    throw error;
+  }
+};
 
 const CreateBroadcast = () => {
   const [title, setTitle] = useState("");
@@ -46,25 +83,57 @@ const CreateBroadcast = () => {
   const [visibility, setVisibility] = useState("public");
   const [startTimeError, setStartTimeError] = useState<string>("");
   const [endTimeError, setEndTimeError] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [creatorId, setCreatorId] = useState<string>("");
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [open, setOpen] = useState(false);
+
   const router = useRouter();
 
-  // Time options for the select dropdown (30-minute intervals)
-  const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2);
-    const minute = i % 2 === 0 ? "00" : "30";
-    return `${hour.toString().padStart(2, "0")}:${minute}`;
+
+  const getCreatorIdFromToken = () => {
+    const authToken = localStorage.getItem("authToken");
+    if (authToken) {
+      try {
+        const payload = JSON.parse(atob(authToken.split(".")[1])); // Decode JWT payload
+        return payload.sub; // Assuming `creatorId` is in the token payload
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  // Query for users
+  const {
+    data: users = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['users', searchTerm],
+    queryFn: () => fetchUsers(searchTerm),
+    enabled: open,
+    staleTime: 5000,
   });
+
+  console.log("pew pew", users)
 
   const validateStartTime = (date: Date | null) => {
     if (!date) return;
-    const now = yesterday;
+
+    const now = new Date();
+    now.setSeconds(0, 0); // Remove seconds and milliseconds for precise comparison.
+
     if (date <= now) {
-      setStartTimeError("Start time must be greater than or equal to current time");
+      setStartTimeError("Start time must be greater than the current time");
       return false;
     }
+
     setStartTimeError("");
     return true;
   };
+
 
   const validateEndTime = (date: Date | null) => {
     if (!date || !startTime) return;
@@ -82,16 +151,15 @@ const CreateBroadcast = () => {
       return;
     }
 
-    const newDate = yesterday;
+    const newDate = new Date(date);
     if (timeStr) {
       const [hours, minutes] = timeStr.split(":").map(Number);
       newDate.setHours(hours, minutes);
     }
 
     if (validateStartTime(newDate)) {
-      setStartTime(yesterday);
-      // Clear end time if it's now invalid
-      if (endTime && endTime <= yesterday) {
+      setStartTime(newDate);
+      if (endTime && endTime <= newDate) {
         setEndTime(null);
       }
     }
@@ -114,43 +182,45 @@ const CreateBroadcast = () => {
     }
   };
 
-  const createBroadcast = useMutation<
-    BroadcastResponse,
-    Error,
-    BroadcastData,
-    unknown
-  >({
+  const handleUserSelect = (user: User) => {
+    setSelectedUsers((prev) => {
+      const isSelected = prev.some((u) => u.id === user.id);
+      if (isSelected) {
+        return prev.filter((u) => u.id !== user.id);
+      }
+      return [...prev, user];
+    });
+  };
+
+  const createBroadcast = useMutation({
     mutationFn: async (broadcastData: BroadcastData) => {
-      const token = getAuthToken()
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Authorization token is missing");
       }
-      console.log("========================>>>>", broadcastData)
-      const response: AxiosResponse<BroadcastResponse> = await axios.post("http://192.168.29.87:4000/broadcasts",
+
+      return axios.post(
+        `${process.env.BACK_END_URL}/broadcasts`,
         {
-          title: broadcastData.title,
-          description: broadcastData.description,
-          startTime: new Date(broadcastData.startTime as Date),
-          endTime: new Date(broadcastData.endTime as Date),
-          visibility: broadcastData.visibility,
-          creatorId: "67acb608ab120cae75b60ed6",
+          ...broadcastData,
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`, // Add auth token in the request
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      return response.data;
     },
     onSuccess: () => {
       console.log("Broadcast created successfully!");
-      setTitle("")
-      setDescription("")
-      setStartTime(null)
-      setEndTime(null)
-      setStartTimeError("")
-      setEndTimeError("")
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setStartTime(null);
+      setEndTime(null);
+      setSelectedUsers([]);
+      setStartTimeError("");
+      setEndTimeError("");
     },
     onError: (error: Error) => {
       console.error("Error creating broadcast:", error.message);
@@ -167,102 +237,31 @@ const CreateBroadcast = () => {
       startTime,
       endTime,
       visibility,
+      creatorId,
+      members: selectedUsers.map(user => user.id),
     });
   };
 
-  interface DateTimePickerProps {
-    value: Date | null;
-    onChange: (date: Date | undefined, time?: string) => void;
-    label: string;
-    error?: string;
-    minDate?: Date;
-    minTime?: string;
-  }
+  useEffect(() => {
+    const id = getCreatorIdFromToken();
+    if (id) {
+      setCreatorId(id);
+    } else {
+      const router = useRouter();
+      router.push("/login");
+    }
+  }, []);
 
-  let currentDate = new Date();
-  let yesterday = new Date(currentDate);
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  const DateTimePicker: React.FC<DateTimePickerProps> = ({
-    value,
-    onChange,
-    label,
-    error,
-    minDate,
-    minTime
-  }) => {
-    const [selectedTime, setSelectedTime] = useState<string>("");
-
-    return (
-      <div className="space-y-2">
-        <Label>{label}</Label>
-        <div className="flex gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-[240px] justify-start text-left font-normal",
-                  !value && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {value ? format(value, "PPP") : <span>Start Date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={value as Date}
-                onSelect={(date) => onChange(date, selectedTime)}
-                disabled={(date) =>
-                  minDate ? date < minDate : date < yesterday
-                }
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Select
-            value={selectedTime}
-            onValueChange={(time) => {
-              setSelectedTime(time);
-              onChange(value ?? undefined, time);
-            }}
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Select time">
-                {selectedTime || <Clock className="h-4 w-4" />}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {timeOptions.map((time) => (
-                <SelectItem
-                  key={time}
-                  value={time}
-                  disabled={minTime ? time < minTime : false}
-                >
-                  {time}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-      </div>
-    );
-  };
 
   return (
-    <Card className="w-full max-w-3xl">
+    <Card className="w-full max-w-3xl p-6">
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-center">
+        <CardTitle className="text-4xl font-semibold text-center text-pink-600">
           Create a Broadcast
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
           <div>
             <Label htmlFor="title">Title</Label>
             <Input
@@ -274,7 +273,6 @@ const CreateBroadcast = () => {
             />
           </div>
 
-          {/* Description */}
           <div>
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -287,27 +285,24 @@ const CreateBroadcast = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Start Time */}
             <DateTimePicker
               label="Start Time"
               value={startTime}
               onChange={handleStartTimeChange}
               error={startTimeError}
-              minDate={yesterday}
+              minDate={new Date()}
             />
 
-            {/* End Time */}
             <DateTimePicker
               label="End Time"
               value={endTime}
               onChange={handleEndTimeChange}
               error={endTimeError}
-              minDate={startTime || yesterday}
+              minDate={startTime || new Date()}
               minTime={startTime ? format(startTime, "HH:mm") : undefined}
             />
           </div>
 
-          {/* Visibility */}
           <div>
             <Label>Visibility</Label>
             <Select onValueChange={setVisibility} value={visibility}>
@@ -321,7 +316,34 @@ const CreateBroadcast = () => {
             </Select>
           </div>
 
-          {/* Submit Button */}
+          <div className="space-y-2">
+            <Label>Select Users</Label>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {selectedUsers.length > 0
+                    ? `${selectedUsers.length} users selected`
+                    : "Select users..."}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Combobox
+                  users={users}
+                  isLoading={isLoading}
+                  selectedUsers={selectedUsers}
+                  onSelect={handleUserSelect}
+                  searchTerm={searchTerm}
+                  onSearch={setSearchTerm}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <div className="text-center">
             <Button
               type="submit"

@@ -1,14 +1,16 @@
-// src/chat/chat.gateway.ts
+// src/gateway/combined.gateway.ts
 import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ChatService } from './chat.service';
-import { CreateChatDto } from './dto/create-chat.dto';
+import { ChatService } from '../chat/chat.service';
+import { CreateChatDto } from '../chat/dto/create-chat.dto';
 
 @WebSocketGateway({
   cors: {
@@ -16,22 +18,37 @@ import { CreateChatDto } from './dto/create-chat.dto';
     credentials: true,
   },
 })
-
-export class ChatGateway {
+export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
+
+  private userSockets = new Map<string, string>();
+
   constructor(private readonly chatService: ChatService) { }
 
-  onModuleInit() {
-    this.server.on('connection', (socket) => {
-      console.log(socket.id)
-      console.log('Connected')
-    })
-
-    this.server.on('disconnect', (socket: Socket) => {
-      console.log(`Client disconnected: ${socket.id}`);
-    });
+  handleConnection(socket: Socket) {
+    const userId = socket.handshake.query.userId as string;
+    if (userId) {
+      this.userSockets.set(userId, socket.id);
+      socket.join(userId);
+      console.log(`Client connected: ${socket.id} (User ID: ${userId})`);
+    } else {
+      console.error('Connection rejected: Missing userId in handshake query');
+      socket.disconnect();
+    }
   }
 
+  handleDisconnect(socket: Socket) {
+    const userId = Array.from(this.userSockets.entries()).find(
+      ([, id]) => id === socket.id,
+    )?.[0];
+
+    if (userId) {
+      this.userSockets.delete(userId);
+      console.log(`Client disconnected: ${socket.id} (User ID: ${userId})`);
+    } else {
+      console.log(`Client disconnected: ${socket.id}`);
+    }
+  }
 
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
@@ -40,8 +57,8 @@ export class ChatGateway {
   ) {
     if (typeof createChatDto === 'string') {
       try {
-        createChatDto = JSON.parse(createChatDto); // Parse the payload into an object
-        console.log(createChatDto)
+        createChatDto = JSON.parse(createChatDto);
+        console.log(createChatDto);
       } catch (error) {
         throw new Error('Invalid JSON payload');
       }
@@ -55,40 +72,40 @@ export class ChatGateway {
     return savedMessage;
   }
 
-  // Handle joining a room
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(@MessageBody('roomId') roomId: string, @ConnectedSocket() client: Socket) {
-    // Ensure roomId is provided
     if (!roomId) {
       throw new Error('Room ID is required to join a room');
     }
-
-    // Join the specified room
     client.join(roomId);
     console.log(`Client ${client.id} joined room ${roomId}`);
 
-    // Fetch the last 50 messages for the room
     const lastMessages = await this.chatService.getLastMessages(roomId, 50);
-
-    // Emit chat history to the joining client
     client.emit('chatHistory', lastMessages);
 
-    // Notify other users in the room
     this.server.to(roomId).emit('userJoined', { userId: client.id });
   }
 
-  // Handle leaving a room
   @SubscribeMessage('leaveRoom')
   handleLeaveRoom(@MessageBody('roomId') roomId: string, @ConnectedSocket() client: Socket) {
     if (!roomId) {
       throw new Error('Room ID is required to leave a room');
     }
-
-    // Leave the specified room
     client.leave(roomId);
     console.log(`Client ${client.id} left room ${roomId}`);
-
-    // Notify other users in the room
     this.server.to(roomId).emit('userLeft', { userId: client.id });
+  }
+
+  sendNotificationToUser(userId: string, notification: any) {
+    const socketId = this.userSockets.get(userId);
+    if (socketId) {
+      this.server.to(socketId).emit('notification', notification);
+    } else {
+      console.warn(`Notification failed: User ${userId} is not connected`);
+    }
+  }
+
+  sendNotificationToAll(notification: any) {
+    this.server.emit('notification', notification);
   }
 }

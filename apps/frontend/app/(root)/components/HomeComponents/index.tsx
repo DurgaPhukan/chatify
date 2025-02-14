@@ -45,60 +45,8 @@ export default function HomeComponent() {
 
   return (
     <div className="bg-gray-100 flex flex-col items-center justify-center">
-      {/* Header */}
-      <header className="bg-white shadow-md w-full py-4 px-8">
-        <div className="w-full flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-pink-600">Chatify</h1>
-          <nav>
-            <ul className="flex space-x-4">
-              <li>
-                <a href="/broadcasts" className="text-pink-700 hover:text-pink-600 font-semibold">
-                  Broadcasts
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="text-pink-700 hover:text-pink-600 font-semibold">
-                  About
-                </a>
-              </li>
-              <li>
-                <a href="#contact" className="text-pink-700 hover:text-pink-600 font-semibold">
-                  Contact
-                </a>
-              </li>
-              {isLoggedIn && (
-                <div className="relative group">
-                  <button className="flex items-center space-x-2 text-pink-700 hover:text-pink-600">
-                    <img
-                      src="/profile-icon.png" // Add your profile icon image here
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                  </button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white shadow-md rounded-lg hidden group-hover:block">
-                    <button
-                      onClick={() => router.push("/profile")}
-                      className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Profile
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              )}
-            </ul>
-          </nav>
-        </div>
-      </header>
 
-      {/* Main Section */}
       <main className="flex-grow container mx-auto flex flex-col items-center text-center py-12">
-        {/* Motto Section */}
         <section className="w-full text-center py-12 px-4 bg-gradient-to-r from-blue-200 via-white to-pink-200 rounded-lg shadow-lg mb-16">
           <h2 className="text-5xl font-extrabold text-gray-800 mb-6">
             Connect. Communicate. Collaborate.
@@ -127,7 +75,6 @@ export default function HomeComponent() {
           </div>
         </section>
 
-        {/* Redirect Button */}
         <button
           onClick={() => router.push(isLoggedIn ? "/broadcasts" : "/login")}
           className="mt-10 px-6 py-3 bg-pink-500 text-white rounded-full shadow-md hover:bg-pink-600 flex items-center space-x-2"
@@ -150,8 +97,7 @@ export default function HomeComponent() {
         </button>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-pink-400 w-full py-4 text-center text-white">
+      <footer className="bg-pink-500 w-full py-4 text-center text-white">
         <p>&copy; {new Date().getFullYear()} Chatify. All rights reserved.</p>
       </footer>
     </div>

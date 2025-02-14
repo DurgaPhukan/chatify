@@ -1,5 +1,4 @@
 "use client";
-
 import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -61,7 +60,10 @@ const ChatPage = () => {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const newSocket = io("192.168.29.87:4000", {
+    const newSocket = io(`${process.env.BACK_END_URL}}`, {
+      query: {
+        userId: creatorId
+      },
       withCredentials: true,
     });
     setSocket(newSocket);
@@ -91,7 +93,6 @@ const ChatPage = () => {
     };
   }, [socket, roomId]);
 
-  // Scroll to the bottom whenever messages update
   useEffect(() => {
     scrollToBottom();
   }, [messages]);

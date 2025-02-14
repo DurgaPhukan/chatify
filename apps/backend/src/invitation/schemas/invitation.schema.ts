@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type InvitationDocument = Invitation & Document;
 
-@Schema({ timestamps: true }) // Adds createdAt and updatedAt fields
+@Schema({ timestamps: true })
 export class Invitation {
   @Prop({ type: Types.ObjectId, default: () => new Types.ObjectId(), unique: true })
   id: Types.ObjectId;

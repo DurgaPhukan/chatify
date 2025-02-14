@@ -21,12 +21,10 @@ const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const router = useRouter();
 
-  // Function to store token in localStorage
   const saveAuthToken = (token: string) => {
     localStorage.setItem("authToken", token);
   };
 
-  // Check for an existing token on page load
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     try {
@@ -47,7 +45,7 @@ const AuthPage: React.FC = () => {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (data: LoginFormData) =>
-      axios.post("http://192.168.29.87:4000/auth/login", data),
+      axios.post(`${process.env.BACK_END_URL}/auth/login`, data),
     onSuccess: (response) => {
       saveAuthToken(response.data.accessToken);
       router.push("/broadcasts");
@@ -57,7 +55,7 @@ const AuthPage: React.FC = () => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
-      axios.post("http://192.168.29.87:4000/auth/register", data),
+      axios.post(`${process.env.BACK_END_URL}/auth/register`, data),
     onSuccess: (response) => {
       saveAuthToken(response.data.token);
       router.push("/broadcasts");
