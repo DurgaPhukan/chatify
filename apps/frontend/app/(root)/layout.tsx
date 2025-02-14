@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import '../global.css';
+import Header from "../components/Header";
 
 export const metadata: Metadata = {
   title: "Meetup chat",
@@ -13,8 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="">
-        {children}
+      <body>
+        <Header />
+        <div className="pt-[3.85rem]">
+          {children}
+        </div>
       </body>
     </html>
   );

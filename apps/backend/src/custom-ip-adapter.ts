@@ -10,9 +10,6 @@ export class CustomIoAdapter extends IoAdapter {
         credentials: true,
       },
     });
-    server.on('connection', (socket) => {
-      console.log('Client connected:', socket.id);
-    });
     return server;
   }
 }

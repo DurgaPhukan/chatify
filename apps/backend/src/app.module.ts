@@ -27,6 +27,5 @@ import { SharedSocketModule } from './socket/socket.module';
   ],
   controllers: [],
   providers: [],
-  // exports: [CombinedSocketGateway],
 })
 export class AppModule { }

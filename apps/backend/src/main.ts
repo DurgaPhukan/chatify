@@ -10,21 +10,18 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(new CustomIoAdapter(app));
 
-  // Enable CORS for HTTP requests
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,
   });
 
-
-  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: {
-        enableImplicitConversion: true, // This helps with simple type conversions
+        enableImplicitConversion: true,
       },
     }),
   );
