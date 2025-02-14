@@ -16,7 +16,6 @@ export class NotificationsService {
     const createdNotification = new this.notificationModel(notificationData);
     const savedNotification = await createdNotification.save();
 
-    // Send the notification to the recipient in real-time
     this.notificationsGateway.sendNotificationToUser(
       savedNotification.recipientId,
       savedNotification,
@@ -77,7 +76,6 @@ export class NotificationsService {
       });
       const savedNotification = await createdNotification.save();
 
-      // Notify the recipient in real-time
       this.notificationsGateway.sendNotificationToUser(recipientId, savedNotification);
     }
   }

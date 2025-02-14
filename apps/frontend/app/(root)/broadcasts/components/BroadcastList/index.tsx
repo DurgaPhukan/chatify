@@ -21,7 +21,7 @@ const fetchChatRooms = async (): Promise<ChatRoom[]> => {
   if (!token) {
     throw new Error("Authorization token is missing");
   }
-  const response = await axios.get("http://localhost:4000/broadcasts", {
+  const response = await axios.get(`${process.env.BACK_END_URL}/broadcasts`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -6,7 +6,7 @@ import { QueryProvider } from "@/app/components/QueryProvider";
 const Create = () => {
   return (
     <QueryProvider>
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="mt-[8rem] flex justify-center items-center">
         <CreateBroadcast />
       </div>
     </QueryProvider>

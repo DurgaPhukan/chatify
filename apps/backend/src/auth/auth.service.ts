@@ -60,8 +60,8 @@ export class AuthService {
     const searchQuery = search
       ? {
         $or: [
-          { name: { $regex: search, $options: 'i' } }, // Case-insensitive regex search for name
-          { email: { $regex: search, $options: 'i' } }, // Case-insensitive regex search for email
+          { name: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
         ],
       }
       : {};

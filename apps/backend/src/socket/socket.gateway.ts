@@ -21,16 +21,15 @@ import { CreateChatDto } from '../chat/dto/create-chat.dto';
 export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
-  private userSockets = new Map<string, string>(); // Map to track user ID and their socket ID
+  private userSockets = new Map<string, string>();
 
   constructor(private readonly chatService: ChatService) { }
 
-  // Handle connection
   handleConnection(socket: Socket) {
-    const userId = socket.handshake.query.userId as string; // User ID from query params
+    const userId = socket.handshake.query.userId as string;
     if (userId) {
       this.userSockets.set(userId, socket.id);
-      socket.join(userId); // Join a room specific to the user
+      socket.join(userId);
       console.log(`Client connected: ${socket.id} (User ID: ${userId})`);
     } else {
       console.error('Connection rejected: Missing userId in handshake query');
@@ -38,7 +37,6 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
     }
   }
 
-  // Handle disconnection
   handleDisconnect(socket: Socket) {
     const userId = Array.from(this.userSockets.entries()).find(
       ([, id]) => id === socket.id,
@@ -52,7 +50,6 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
     }
   }
 
-  // Chat functionality
   @SubscribeMessage('sendMessage')
   async handleSendMessage(
     @MessageBody() createChatDto: CreateChatDto,
@@ -60,7 +57,7 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
   ) {
     if (typeof createChatDto === 'string') {
       try {
-        createChatDto = JSON.parse(createChatDto); // Parse the payload into an object
+        createChatDto = JSON.parse(createChatDto);
         console.log(createChatDto);
       } catch (error) {
         throw new Error('Invalid JSON payload');
@@ -99,7 +96,6 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
     this.server.to(roomId).emit('userLeft', { userId: client.id });
   }
 
-  // Notification functionality
   sendNotificationToUser(userId: string, notification: any) {
     const socketId = this.userSockets.get(userId);
     if (socketId) {

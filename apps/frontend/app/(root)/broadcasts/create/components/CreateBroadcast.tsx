@@ -55,7 +55,7 @@ const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
   }
 
   try {
-    const response = await axios.get('http://localhost:4000/auth/users', {
+    const response = await axios.get(`${process.env.BACK_END_URL}/auth/users`, {
       headers: {
         Authorization: `Bearer ${token}`
       },
@@ -200,7 +200,7 @@ const CreateBroadcast = () => {
       }
 
       return axios.post(
-        "http://localhost:4000/broadcasts",
+        `${process.env.BACK_END_URL}/broadcasts`,
         {
           ...broadcastData,
         },
@@ -252,13 +252,11 @@ const CreateBroadcast = () => {
     }
   }, []);
 
-  // Component for date and time selection
-
 
   return (
-    <Card className="w-full max-w-3xl">
+    <Card className="w-full max-w-3xl p-6">
       <CardHeader>
-        <CardTitle className="text-2xl font-semibold text-center">
+        <CardTitle className="text-4xl font-semibold text-center text-pink-600">
           Create a Broadcast
         </CardTitle>
       </CardHeader>
