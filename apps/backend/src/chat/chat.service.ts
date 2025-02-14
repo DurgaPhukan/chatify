@@ -13,6 +13,7 @@ export class ChatService {
 
   // Save a message to the database
   async createMessage(createChatDto: CreateChatDto): Promise<Chat> {
+    console.log('============>>>', createChatDto);
     const chatData = {
       ...createChatDto,
       creatorId: new Types.ObjectId(createChatDto.creatorId),
@@ -23,7 +24,13 @@ export class ChatService {
         : [],
     };
     const chat = new this.chatModel(chatData);
-    return chat.save();
+    const savedChat = await chat.save();
+
+    // Populate creatorId with name and email
+    return savedChat.populate({
+      path: 'creatorId',
+      select: 'name email',
+    });
   }
 
   /**
@@ -33,18 +40,26 @@ export class ChatService {
   async getMessagesByRoom(roomId: string): Promise<Chat[]> {
     return this.chatModel
       .find({ roomId: new Types.ObjectId(roomId), deletedAt: null }) // Exclude soft-deleted messages
+      .populate({
+        path: 'creatorId',
+        select: 'name email',
+      })
       .sort({ createdAt: 1 }) // Oldest first
       .exec();
   }
 
   /**
-  * Retrieve the last N messages in a specific room
-  * @param roomId - The ID of the chat room
-  * @param limit - The number of messages to retrieve
-  */
+   * Retrieve the last N messages in a specific room
+   * @param roomId - The ID of the chat room
+   * @param limit - The number of messages to retrieve
+   */
   async getLastMessages(roomId: string, limit: number = 50): Promise<Chat[]> {
     return this.chatModel
       .find({ roomId: new Types.ObjectId(roomId), deletedAt: null }) // Exclude soft-deleted messages
+      .populate({
+        path: 'creatorId',
+        select: 'name email',
+      })
       .sort({ createdAt: -1 }) // Newest first
       .limit(limit)
       .exec()
@@ -52,9 +67,9 @@ export class ChatService {
   }
 
   /**
-  * Soft delete a message by setting the `deletedAt` timestamp
-  * @param messageId - The ID of the message to delete
-  */
+   * Soft delete a message by setting the `deletedAt` timestamp
+   * @param messageId - The ID of the message to delete
+   */
   async deleteMessage(messageId: string): Promise<Chat> {
     return this.chatModel
       .findByIdAndUpdate(

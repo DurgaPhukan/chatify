@@ -24,6 +24,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, Clock } from "lucide-react";
+import { getAuthToken } from "@/app/utils/getAuthToken";
 
 type BroadcastData = {
   title: string;
@@ -56,7 +57,7 @@ const CreateBroadcast = () => {
 
   const validateStartTime = (date: Date | null) => {
     if (!date) return;
-    const now = new Date();
+    const now = yesterday;
     if (date <= now) {
       setStartTimeError("Start time must be greater than or equal to current time");
       return false;
@@ -81,16 +82,16 @@ const CreateBroadcast = () => {
       return;
     }
 
-    const newDate = new Date(date);
+    const newDate = yesterday;
     if (timeStr) {
       const [hours, minutes] = timeStr.split(":").map(Number);
       newDate.setHours(hours, minutes);
     }
 
     if (validateStartTime(newDate)) {
-      setStartTime(newDate);
+      setStartTime(yesterday);
       // Clear end time if it's now invalid
-      if (endTime && endTime <= newDate) {
+      if (endTime && endTime <= yesterday) {
         setEndTime(null);
       }
     }
@@ -120,8 +121,12 @@ const CreateBroadcast = () => {
     unknown
   >({
     mutationFn: async (broadcastData: BroadcastData) => {
+      const token = getAuthToken()
+      if (!token) {
+        throw new Error("Authorization token is missing");
+      }
       console.log("========================>>>>", broadcastData)
-      const response: AxiosResponse<BroadcastResponse> = await axios.post("http://localhost:4000/broadcasts",
+      const response: AxiosResponse<BroadcastResponse> = await axios.post("http://192.168.29.87:4000/broadcasts",
         {
           title: broadcastData.title,
           description: broadcastData.description,
@@ -132,8 +137,7 @@ const CreateBroadcast = () => {
         },
         {
           headers: {
-            // Authorization: `Bearer ${token}`, // Add auth token in the request
-            Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbmpveW9mZmljYWxwQGdtYWlsLmNvbSIsInN1YiI6IjY3YWNiNjA4YWIxMjBjYWU3NWI2MGVkNiIsImlhdCI6MTczOTM3NTcwOCwiZXhwIjoxNzM5Mzc5MzA4fQ.OS1WHRfGO8maSmHjgiP33kSxLI3D2h6svD-cw0lrcCA"
+            Authorization: `Bearer ${token}`, // Add auth token in the request
           },
         }
       );
@@ -175,6 +179,10 @@ const CreateBroadcast = () => {
     minTime?: string;
   }
 
+  let currentDate = new Date();
+  let yesterday = new Date(currentDate);
+  yesterday.setDate(yesterday.getDate() - 1)
+
   const DateTimePicker: React.FC<DateTimePickerProps> = ({
     value,
     onChange,
@@ -208,7 +216,7 @@ const CreateBroadcast = () => {
                 selected={value as Date}
                 onSelect={(date) => onChange(date, selectedTime)}
                 disabled={(date) =>
-                  minDate ? date < minDate : date < new Date()
+                  minDate ? date < minDate : date < yesterday
                 }
                 initialFocus
               />
@@ -285,7 +293,7 @@ const CreateBroadcast = () => {
               value={startTime}
               onChange={handleStartTimeChange}
               error={startTimeError}
-              minDate={new Date()}
+              minDate={yesterday}
             />
 
             {/* End Time */}
@@ -294,7 +302,7 @@ const CreateBroadcast = () => {
               value={endTime}
               onChange={handleEndTimeChange}
               error={endTimeError}
-              minDate={startTime || new Date()}
+              minDate={startTime || yesterday}
               minTime={startTime ? format(startTime, "HH:mm") : undefined}
             />
           </div>

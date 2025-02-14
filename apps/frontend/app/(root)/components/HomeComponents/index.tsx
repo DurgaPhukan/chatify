@@ -1,19 +1,43 @@
 "use client"
 import { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 export default function HomeComponent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Check if authToken exists in local storage
-    const authToken = localStorage.getItem("authToken");
-    setIsLoggedIn(!!authToken);
-  }, []);
+    const checkAuthToken = () => {
+      const authToken = localStorage.getItem("authToken");
+      if (authToken) {
+        try {
+          const base64Url = authToken.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const decodedToken = JSON.parse(atob(base64));
+
+          // Check if the token is expired
+          if (decodedToken.exp * 1000 < Date.now()) {
+            localStorage.removeItem("authToken");
+            setIsLoggedIn(false);
+            router.push("/login");
+          } else {
+            setIsLoggedIn(true);
+          }
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          localStorage.removeItem("authToken");
+          setIsLoggedIn(false);
+          router.push("/login");
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkAuthToken();
+  }, [router]);
 
   const handleLogout = () => {
-    // Remove authToken and redirect to login
     localStorage.removeItem("authToken");
     setIsLoggedIn(false);
     router.push("/login");
@@ -44,7 +68,7 @@ export default function HomeComponent() {
               </li>
               {isLoggedIn && (
                 <div className="relative group">
-                  <button className="flex items-center space-x-2 text-gray-700 hover:text-blue-600">
+                  <button className="flex items-center space-x-2 text-pink-700 hover:text-pink-600">
                     <img
                       src="/profile-icon.png" // Add your profile icon image here
                       alt="Profile"

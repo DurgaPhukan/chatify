@@ -41,6 +41,7 @@ export class ChatGateway {
     if (typeof createChatDto === 'string') {
       try {
         createChatDto = JSON.parse(createChatDto); // Parse the payload into an object
+        console.log(createChatDto)
       } catch (error) {
         throw new Error('Invalid JSON payload');
       }

@@ -21,10 +21,9 @@ const fetchChatRooms = async (): Promise<ChatRoom[]> => {
   if (!token) {
     throw new Error("Authorization token is missing");
   }
-  const response = await axios.get("http://localhost:4000/broadcasts", {
+  const response = await axios.get("http://192.168.29.87:4000/broadcasts", {
     headers: {
       Authorization: `Bearer ${token}`,
-      // Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbmpveW9mZmljYWxwQGdtYWlsLmNvbSIsInN1YiI6IjY3YWNiNjA4YWIxMjBjYWU3NWI2MGVkNiIsImlhdCI6MTczOTQzNzk4OCwiZXhwIjoxNzM5NDQxNTg4fQ.feZmozQKR8jxgqgLYTssd5ulpaewynCIm_jG-JnQ8D4"
     },
   });
   console.log("ressss", response)
@@ -44,7 +43,11 @@ const BroadcastList: React.FC = () => {
   });
 
   if (isLoading) {
-    return <div className="text-center mt-10">Loading chat rooms...</div>;
+    return <div className="text-center mt-10">
+      <h3 className="text-xl font-semibold text-pink-500">
+        Loading chat rooms...
+      </h3>
+    </div>;
   }
   console.log("These are chat rooms", chatRooms)
 

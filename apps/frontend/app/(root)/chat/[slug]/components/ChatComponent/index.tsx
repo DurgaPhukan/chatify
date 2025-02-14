@@ -1,31 +1,67 @@
 "use client";
 
+import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 interface Message {
   id: string;
   message: string;
-  creatorId: string;
+  creatorId: {
+    _id: string;
+    name: string;
+    email: string;
+  };
   createdAt: string;
 }
 
 const ChatPage = () => {
-
   const params = useParams();
   const { slug } = params;
-  console.log("this is slug", slug)
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
-  const [creatorId, setCreatorId] = useState<string>("67ad99b7d94c1312eeb0c34f"); // Example creatorId
-  const [roomId, setRoomId] = useState<string>(slug as string || "67ad99b7d94c1312eeb0c350"); // Example roomId
+  const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string>(slug as string);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null); // Ref for the messages container
+
+  const getCreatorIdFromToken = () => {
+    const authToken = localStorage.getItem("authToken");
+    if (authToken) {
+      try {
+        const payload = JSON.parse(atob(authToken.split(".")[1])); // Decode JWT payload
+        return payload.sub; // Assuming `creatorId` is in the token payload
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  // Scroll to the bottom when new messages arrive
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Set creatorId from authToken on mount
+  useEffect(() => {
+    const id = getCreatorIdFromToken();
+    if (id) {
+      setCreatorId(id);
+    } else {
+      const router = useRouter();
+      router.push("/login");
+    }
+  }, []);
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const newSocket = io("http://localhost:4000", {
+    const newSocket = io("192.168.29.87:4000", {
       withCredentials: true,
     });
     setSocket(newSocket);
@@ -39,17 +75,14 @@ const ChatPage = () => {
   useEffect(() => {
     if (!socket || !roomId) return;
 
-    // Join the room
     socket.emit("joinRoom", { roomId });
 
-    // Listen for chat history
     socket.on("chatHistory", (chatHistory: Message[]) => {
-      setMessages(chatHistory); // Load initial messages
+      setMessages(chatHistory);
     });
 
-    // Listen for new messages
     socket.on("newMessage", (newMessage: Message) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]); // Append new messages
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
 
     return () => {
@@ -58,9 +91,13 @@ const ChatPage = () => {
     };
   }, [socket, roomId]);
 
-  // Send a message
+  // Scroll to the bottom whenever messages update
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const sendMessage = () => {
-    if (socket && message.trim() !== "") {
+    if (socket && message.trim() !== "" && creatorId) {
       const payload = {
         message,
         creatorId,
@@ -71,35 +108,64 @@ const ChatPage = () => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
-      {/* Chat messages */}
+      <Header />
       <div className="flex-grow overflow-y-auto bg-gray-100 p-4">
-        {messages.map((msg, index) => (
-          <div key={msg.id || msg.message + index} className="p-2 my-2 bg-white shadow rounded">
-            <strong>{msg.creatorId}:</strong> {msg.message}
-            <div className="text-xs text-gray-500">
-              {new Date(msg.createdAt).toLocaleTimeString()}
-            </div>
-          </div>
-        ))}
+        <div className="mx-auto max-w-4xl">
+          {messages.map((msg, index) => {
+            const isMine = msg?.creatorId?._id === creatorId;
+            return (
+              <div
+                key={msg.id || msg.message + index}
+                className={`p-4 my-3 rounded-xl shadow-lg w-fit min-w-96 max-w-[70%] ${isMine
+                  ? "bg-blue-500 text-white ml-auto"
+                  : "bg-gray-200 text-black mr-auto"
+                  }`}
+                style={{
+                  alignSelf: isMine ? "flex-end" : "flex-start",
+                }}
+              >
+                <div className="text-sm font-semibold">
+                  {isMine ? "You" : msg.creatorId?.name}
+                </div>
+                <div className="mt-1 text-base">{msg.message}</div>
+                <div
+                  className={`text-xs mt-2 ${isMine ? "text-white" : "text-gray-500"
+                    }`}
+                >
+                  {new Date(msg.createdAt).toLocaleTimeString()}
+                </div>
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef} /> {/* Reference to scroll */}
+        </div>
       </div>
 
-      {/* Message input */}
-      <div className="flex p-4 bg-gray-200">
-        <input
-          type="text"
-          className="flex-grow p-2 border rounded mr-2"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type your message..."
-        />
-        <button
-          onClick={sendMessage}
-          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Send
-        </button>
+      <div className="py-3 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 flex justify-center">
+        <div className="w-[70rem] flex items-center">
+          <input
+            type="text"
+            className="flex-grow p-4 border border-gray-300 rounded-lg mr-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type your message..."
+          />
+          <button
+            onClick={sendMessage}
+            className="p-4 bg-pink-600 text-white rounded-lg shadow-md hover:bg-pink-700 transition-all"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
