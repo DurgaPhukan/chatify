@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { BroadcastsModule } from './broadcasts/broadcasts.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { CombinedSocketGateway } from './socket/socket.gateway';
 
 
 @Module({
@@ -24,6 +25,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ChatModule
   ],
   controllers: [],
-  providers: [],
+  providers: [CombinedSocketGateway],
+  exports: [CombinedSocketGateway],
 })
 export class AppModule { }

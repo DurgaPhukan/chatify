@@ -1,16 +1,17 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module, forwardRef } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
-import { Notification, NotificationSchema } from './schemas/notifications.schema';
-import { CombinedSocketGateway } from 'src/socket/socket.gateway';
-import { ChatModule } from 'src/chat/chat.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { NotificationSchema } from './schemas/notifications.schema';
+import { ChatModule } from '../chat/chat.module'; // Import ChatModule
+import { AppModule } from '../app.module'; // Import AppModule to access CombinedSocketGateway
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Notification.name, schema: NotificationSchema }]),
-    ChatModule
+    MongooseModule.forFeature([{ name: 'Notification', schema: NotificationSchema }]),
+    forwardRef(() => ChatModule), // Use forwardRef to avoid circular dependency
+    forwardRef(() => AppModule), // Use forwardRef to avoid circular dependency
   ],
-  providers: [CombinedSocketGateway, NotificationsService],
+  providers: [NotificationsService],
   exports: [NotificationsService],
 })
 export class NotificationsModule { }
