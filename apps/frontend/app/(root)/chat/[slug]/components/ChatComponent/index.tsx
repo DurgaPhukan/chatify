@@ -61,7 +61,7 @@ const ChatPage = () => {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const newSocket = io("192.168.29.87:4000", {
+    const newSocket = io("http://localhost:4000", {
       withCredentials: true,
     });
     setSocket(newSocket);

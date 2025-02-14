@@ -12,7 +12,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) { }
 
-  async register(email: string, password: string, name: string, roles: string[] = ['user']): Promise<UserDocument> {
+  async register(
+    email: string,
+    password: string,
+    name: string,
+    roles: string[] = ['user'],
+  ): Promise<UserDocument> {
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -36,14 +41,34 @@ export class AuthService {
     return { accessToken: this.jwtService.sign(payload) };
   }
 
-  /**
-   * Validates a user by their email and password.
-   */
   async validateUser(email: string, password: string): Promise<UserDocument | null> {
     const user = await this.userModel.findOne({ email });
     if (user && (await bcrypt.compare(password, user.password))) {
-      return user; // Return the user if validated successfully
+      return user;
     }
-    return null; // Return null if validation fails
+    return null;
+  }
+
+  async getUsers(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+  ): Promise<{ users: UserDocument[]; total: number }> {
+    const skip = (page - 1) * limit;
+
+    // Build search query
+    const searchQuery = search
+      ? {
+        $or: [
+          { name: { $regex: search, $options: 'i' } }, // Case-insensitive regex search for name
+          { email: { $regex: search, $options: 'i' } }, // Case-insensitive regex search for email
+        ],
+      }
+      : {};
+
+    const users = await this.userModel.find(searchQuery).skip(skip).limit(limit).exec();
+    const total = await this.userModel.countDocuments(searchQuery).exec();
+
+    return { users, total };
   }
 }

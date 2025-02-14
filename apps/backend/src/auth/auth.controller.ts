@@ -1,6 +1,7 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, MinLength, IsInt, Min, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer'; // Add this import
 
 class RegisterDto {
   @IsEmail()
@@ -13,7 +14,7 @@ class RegisterDto {
   @IsNotEmpty()
   name: string;
 
-  roles?: string[]; // Optional roles field
+  roles?: string[];
 }
 
 class LoginDto {
@@ -22,6 +23,22 @@ class LoginDto {
 
   @IsNotEmpty()
   password: string;
+}
+
+class PaginationDto {
+  @Type(() => Number) // Add this decorator
+  @IsInt()
+  @Min(1)
+  page: number;
+
+  @Type(() => Number) // Add this decorator
+  @IsInt()
+  @Min(1)
+  limit: number;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 }
 
 @Controller('auth')
@@ -49,4 +66,25 @@ export class AuthController {
       accessToken: result.accessToken,
     };
   }
+
+  @Get('users') // Change to @Get for query parameters
+  @HttpCode(HttpStatus.OK)
+  async getUsers(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search?: string, // Make search optional
+  ) {
+    console.log('PPP', page, limit, search);
+    const { users, total } = await this.authService.getUsers(page, limit, search);
+    return {
+      message: 'Users fetched successfully',
+      data: {
+        users,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
 }
