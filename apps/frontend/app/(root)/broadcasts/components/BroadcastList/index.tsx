@@ -21,12 +21,11 @@ const fetchChatRooms = async (): Promise<ChatRoom[]> => {
   if (!token) {
     throw new Error("Authorization token is missing");
   }
-  const response = await axios.get(`${process.env.BACK_END_URL}/broadcasts`, {
+  const response = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END_URL}/broadcasts`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  console.log("ressss", response)
   return response.data;
 };
 
@@ -38,7 +37,7 @@ const BroadcastList: React.FC = () => {
     isLoading,
     error,
   } = useQuery<ChatRoom[]>({
-    queryKey: ["chatRooms"], // Query key must be an array
+    queryKey: ["chatRooms"],
     queryFn: fetchChatRooms,
   });
 

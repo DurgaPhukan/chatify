@@ -55,18 +55,18 @@ const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
   }
 
   try {
-    const response = await axios.get(`${process.env.BACK_END_URL}/auth/users`, {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/users`, {
       headers: {
         Authorization: `Bearer ${token}`
       },
       params: {
         page: 1,
         limit: 20,
-        search: searchQuery || undefined // Only send `search` if it has a value
+        search: searchQuery || undefined
       }
     });
     console.log("resss", response)
-    return response.data.data.users; // Adjust response path if necessary
+    return response.data.data.users;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
       console.error('Invalid pagination parameters:', error.response.data);
@@ -200,7 +200,7 @@ const CreateBroadcast = () => {
       }
 
       return axios.post(
-        `${process.env.BACK_END_URL}/broadcasts`,
+        `${process.env.NEXT_PUBLIC_BACK_END_URL}/broadcasts`,
         {
           ...broadcastData,
         },

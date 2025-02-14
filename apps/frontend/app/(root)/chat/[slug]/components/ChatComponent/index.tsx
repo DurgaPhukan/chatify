@@ -60,7 +60,7 @@ const ChatPage = () => {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const newSocket = io(`${process.env.BACK_END_URL}}`, {
+    const newSocket = io(`${process.env.NEXT_PUBLIC_BACK_END_URL}/`, {
       query: {
         userId: creatorId
       },

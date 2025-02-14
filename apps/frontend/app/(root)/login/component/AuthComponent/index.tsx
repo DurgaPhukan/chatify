@@ -45,7 +45,7 @@ const AuthPage: React.FC = () => {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: (data: LoginFormData) =>
-      axios.post(`${process.env.BACK_END_URL}/auth/login`, data),
+      axios.post(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/login`, data),
     onSuccess: (response) => {
       saveAuthToken(response.data.accessToken);
       router.push("/broadcasts");
@@ -55,7 +55,7 @@ const AuthPage: React.FC = () => {
   // Register mutation
   const registerMutation = useMutation({
     mutationFn: (data: Omit<RegisterFormData, "confirmPassword">) =>
-      axios.post(`${process.env.BACK_END_URL}/auth/register`, data),
+      axios.post(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/register`, data),
     onSuccess: (response) => {
       saveAuthToken(response.data.token);
       router.push("/broadcasts");
