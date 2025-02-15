@@ -6,15 +6,30 @@ import { BroadcastsModule } from './broadcasts/broadcasts.module';
 import { ChatModule } from './chat/chat.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { SharedSocketModule } from './socket/socket.module';
-
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env', }),
+    ThrottlerModule.forRoot(
+      //   {
+      //   throttlers: [
+      //     ttl: 60000,
+      //     limit: 10
+      //   ]
+      // }
+      [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ]
+    ),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>("MONGO_URI"),
+        uri: configService.get<string>('MONGO_URI'),
       }),
       inject: [ConfigService],
     }),
@@ -23,9 +38,14 @@ import { SharedSocketModule } from './socket/socket.module';
     BroadcastsModule,
     NotificationsModule,
     ChatModule,
-    SharedSocketModule
+    SharedSocketModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
+  ],
 })
 export class AppModule { }

@@ -51,6 +51,13 @@ const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
   if (!token) {
     throw new Error("Authorization token is missing");
   }
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  const isTokenExpired = payload.exp * 1000 < Date.now(); // `exp` is in seconds, convert to milliseconds
+
+  if (isTokenExpired) {
+    localStorage.removeItem("authToken");
+    window.location.href = "/login"
+  }
 
   try {
     const response = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/users`, {
@@ -244,7 +251,6 @@ const CreateBroadcast = () => {
     if (id) {
       setCreatorId(id);
     } else {
-      const router = useRouter();
       router.push("/login");
     }
   }, []);
