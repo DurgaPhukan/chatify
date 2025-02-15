@@ -19,7 +19,15 @@ type ChatRoom = {
 const fetchChatRooms = async (): Promise<ChatRoom[]> => {
   const token = getAuthToken()
   if (!token) {
+    window.location.href = "/login"
     throw new Error("Authorization token is missing");
+  }
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  const isTokenExpired = payload.exp * 1000 < Date.now(); // `exp` is in seconds, convert to milliseconds
+
+  if (isTokenExpired) {
+    localStorage.removeItem("authToken");
+    window.location.href = "/login"
   }
   const response = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END_URL}/broadcasts`, {
     headers: {
@@ -48,7 +56,6 @@ const BroadcastList: React.FC = () => {
       </h3>
     </div>;
   }
-  console.log("These are chat rooms", chatRooms)
 
   if (error instanceof Error) {
     return (

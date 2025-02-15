@@ -37,12 +37,6 @@ export default function HomeComponent() {
     checkAuthToken();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    setIsLoggedIn(false);
-    router.push("/login");
-  };
-
   return (
     <div className="bg-gray-100 flex flex-col items-center justify-center">
 
@@ -56,22 +50,28 @@ export default function HomeComponent() {
             and combat loneliness. Discover a platform designed to motivate you
             and foster meaningful relationships in a digital era.
           </p>
-          <div className="flex gap-2">
-            <img
-              src="https://images.unsplash.com/photo-1532635241-17e820acc59f?q=80&w=2015&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" // Add an illustrative image here
-              alt="Chatify Benefits"
-              className="  max-w-md mx-auto rounded-lg shadow-md"
-            />
-            <img
-              src="https://plus.unsplash.com/premium_photo-1663051303500-c85bef3f05f6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVvcGxlJTIwZ3JvdXB8ZW58MHx8MHx8fDA%3D" // Add an illustrative image here
-              alt="Chatify Meeting"
-              className="max-w-md mx-auto rounded-lg shadow-md"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHBlb3BsZSUyMGdyb3VwfGVufDB8fDB8fHww" // Add an illustrative image here
-              alt="Chatify world"
-              className="max-w-xl mx-auto rounded-lg shadow-md"
-            />
+          <div className="flex sm:flex-col lg:flex-row gap-4 justify-center">
+            <div>
+              <img
+                src="https://images.unsplash.com/photo-1532635241-17e820acc59f?q=80&w=2015&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" // Add an illustrative image here
+                alt="Chatify Benefits"
+                className="max-w-md mx-auto rounded-lg shadow-md w-[32rem] h-[20rem]"
+              />
+            </div>
+            <div>
+              <img
+                src="https://plus.unsplash.com/premium_photo-1663051303500-c85bef3f05f6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cGVvcGxlJTIwZ3JvdXB8ZW58MHx8MHx8fDA%3D" // Add an illustrative image here
+                alt="Chatify Meeting"
+                className="max-w-md mx-auto rounded-lg shadow-md w-[32rem] h-[20rem]"
+              />
+            </div>
+            <div>
+              <img
+                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHBlb3BsZSUyMGdyb3VwfGVufDB8fDB8fHww" // Add an illustrative image here
+                alt="Chatify world"
+                className="max-w-md mx-auto rounded-lg shadow-md w-[32rem] h-[20rem]"
+              />
+            </div>
           </div>
         </section>
 

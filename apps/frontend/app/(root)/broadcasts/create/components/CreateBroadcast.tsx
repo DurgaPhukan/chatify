@@ -1,13 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { getAuthToken } from "@/app/utils/getAuthToken";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -15,15 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { format } from "date-fns";
-import { getAuthToken } from "@/app/utils/getAuthToken";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import Combobox from "./ComboBox";
 import DateTimePicker from "./DateTimePicker";
 
@@ -53,6 +51,13 @@ const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
   if (!token) {
     throw new Error("Authorization token is missing");
   }
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  const isTokenExpired = payload.exp * 1000 < Date.now(); // `exp` is in seconds, convert to milliseconds
+
+  if (isTokenExpired) {
+    localStorage.removeItem("authToken");
+    window.location.href = "/login"
+  }
 
   try {
     const response = await axios.get(`${process.env.NEXT_PUBLIC_BACK_END_URL}/auth/users`, {
@@ -65,7 +70,6 @@ const fetchUsers = async (searchQuery: string = ""): Promise<User[]> => {
         search: searchQuery || undefined
       }
     });
-    console.log("resss", response)
     return response.data.data.users;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
@@ -247,7 +251,6 @@ const CreateBroadcast = () => {
     if (id) {
       setCreatorId(id);
     } else {
-      const router = useRouter();
       router.push("/login");
     }
   }, []);

@@ -1,4 +1,3 @@
-// src/gateway/combined.gateway.ts
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -11,6 +10,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { ChatService } from '../chat/chat.service';
 import { CreateChatDto } from '../chat/dto/create-chat.dto';
+import { UseGuards } from '@nestjs/common';
+import { WsThrottlerGuard } from 'src/guards/ws-throttler.guard';
 
 @WebSocketGateway({
   cors: {
@@ -51,6 +52,7 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
   }
 
   @SubscribeMessage('sendMessage')
+  @UseGuards(WsThrottlerGuard)
   async handleSendMessage(
     @MessageBody() createChatDto: CreateChatDto,
     @ConnectedSocket() client: Socket,
@@ -73,6 +75,7 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
   }
 
   @SubscribeMessage('joinRoom')
+  @UseGuards(WsThrottlerGuard)
   async handleJoinRoom(@MessageBody('roomId') roomId: string, @ConnectedSocket() client: Socket) {
     if (!roomId) {
       throw new Error('Room ID is required to join a room');
@@ -87,6 +90,7 @@ export class CombinedSocketGateway implements OnGatewayConnection, OnGatewayDisc
   }
 
   @SubscribeMessage('leaveRoom')
+  @UseGuards(WsThrottlerGuard)
   handleLeaveRoom(@MessageBody('roomId') roomId: string, @ConnectedSocket() client: Socket) {
     if (!roomId) {
       throw new Error('Room ID is required to leave a room');

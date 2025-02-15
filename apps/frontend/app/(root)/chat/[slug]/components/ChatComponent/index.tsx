@@ -1,5 +1,6 @@
 "use client";
 import Header from "@/app/components/Header";
+import { getAuthToken } from "@/app/utils/getAuthToken";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -25,7 +26,7 @@ const ChatPage = () => {
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [roomId, setRoomId] = useState<string>(slug as string);
   const messagesEndRef = useRef<HTMLDivElement | null>(null); // Ref for the messages container
-
+  const router = useRouter();
   const getCreatorIdFromToken = () => {
     const authToken = localStorage.getItem("authToken");
     if (authToken) {
@@ -53,16 +54,28 @@ const ChatPage = () => {
     if (id) {
       setCreatorId(id);
     } else {
-      const router = useRouter();
       router.push("/login");
     }
   }, []);
 
   // Initialize Socket.IO connection
   useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      window.location.href = "/login"
+      throw new Error("Authorization token is missing");
+    }
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const isTokenExpired = payload.exp * 1000 < Date.now(); // `exp` is in seconds, convert to milliseconds
+
+    if (isTokenExpired) {
+      localStorage.removeItem("authToken");
+      window.location.href = "/login"
+    }
+
     const newSocket = io(`${process.env.NEXT_PUBLIC_BACK_END_URL}/`, {
       query: {
-        userId: creatorId
+        userId: payload.sub
       },
       withCredentials: true,
     });

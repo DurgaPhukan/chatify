@@ -74,7 +74,6 @@ export class AuthController {
     @Query('limit') limit: number,
     @Query('search') search?: string,
   ) {
-    console.log('PPP', page, limit, search);
     const { users, total } = await this.authService.getUsers(page, limit, search);
     return {
       message: 'Users fetched successfully',
