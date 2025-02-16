@@ -4,6 +4,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import GoogleOAuthButton from "../GoogleOAuthButton";
 
 interface LoginFormData {
   email: string;
@@ -17,7 +18,7 @@ interface RegisterFormData {
   confirmPassword: string;
 }
 
-const AuthPage: React.FC = () => {
+const AuthComponent: React.FC = () => {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const router = useRouter();
 
@@ -144,6 +145,9 @@ const AuthPage: React.FC = () => {
                 Login
               </button>
             </form>
+            <div className="mt-4">
+              <GoogleOAuthButton />
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -197,4 +201,4 @@ const AuthPage: React.FC = () => {
   );
 };
 
-export default AuthPage;
+export default AuthComponent;

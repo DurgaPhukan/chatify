@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User, UserSchema } from './schemas/user.schema';
 import { JwtStrategy } from './jwt.strategy';
+import { HttpModule } from '@nestjs/axios';
+import { GoogleStrategy } from './google.strategy';
 
 @Module({
   imports: [
@@ -15,8 +17,9 @@ import { JwtStrategy } from './jwt.strategy';
       secret: process.env.JWT_SECRET || 'default-secret',
       signOptions: { expiresIn: '1h' },
     }),
+    HttpModule
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
   exports: [AuthService, JwtModule],
   controllers: [AuthController],
 })
