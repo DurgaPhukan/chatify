@@ -116,16 +116,15 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header />
-      <div className="flex-grow overflow-y-auto bg-gray-100 p-4">
+    <div className="flex flex-col h-[56.2rem]">
+      <div className="flex-grow overflow-y-auto bg-gray-100">
         <div className="mx-auto max-w-4xl">
           {messages.map((msg, index) => {
             const isMine = msg?.creatorId?._id === creatorId;
             return (
               <div
                 key={msg.id || msg.message + index}
-                className={`p-4 my-3 rounded-xl shadow-lg w-fit min-w-96 max-w-[70%] ${isMine
+                className={`p-4 mx-3 my-3 rounded-xl shadow-lg w-fit min-w-64 md:min-w-96 max-w-[80%] ${isMine
                   ? "bg-blue-500 text-white ml-auto"
                   : "bg-gray-200 text-black mr-auto"
                   }`}
@@ -150,8 +149,8 @@ const ChatPage = () => {
         </div>
       </div>
 
-      <div className="py-3 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 flex justify-center">
-        <div className="w-[70rem] flex items-center">
+      <div className="px-3 py-3 bg-gradient-to-r from-pink-400 via-purple-500 to-blue-500 flex justify-center">
+        <div className="w-[30rem] md:w-[70rem] flex items-center">
           <input
             type="text"
             className="flex-grow p-4 border border-gray-300 rounded-lg mr-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -162,7 +161,7 @@ const ChatPage = () => {
           />
           <button
             onClick={sendMessage}
-            className="p-4 bg-pink-600 text-white rounded-lg shadow-md hover:bg-pink-700 transition-all"
+            className="p-2 md:py-4 md:px-8 bg-pink-600 text-white rounded-lg shadow-md hover:bg-pink-700 transition-all"
           >
             Send
           </button>

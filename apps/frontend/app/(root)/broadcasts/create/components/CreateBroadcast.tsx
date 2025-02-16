@@ -244,7 +244,6 @@ const CreateBroadcast = () => {
     if (id) {
       setCreatorId(id);
     } else {
-      const router = useRouter();
       router.push("/login");
     }
   }, []);

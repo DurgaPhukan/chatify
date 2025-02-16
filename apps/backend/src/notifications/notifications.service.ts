@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-// import { NotificationsGateway } from './notifications.gateway';
 import { Notification, NotificationDocument } from './schemas/notifications.schema';
 import { CombinedSocketGateway } from 'src/socket/socket.gateway';
 

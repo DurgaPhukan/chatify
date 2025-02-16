@@ -6,6 +6,6 @@ import { ChatModule } from 'src/chat/chat.module';
 @Module({
   imports: [ChatModule],
   providers: [CombinedSocketGateway],
-  exports: [CombinedSocketGateway], // Export CombinedSocketGateway
+  exports: [CombinedSocketGateway],
 })
 export class SharedSocketModule { }

@@ -3,8 +3,8 @@ import '../global.css';
 import Header from "../components/Header";
 
 export const metadata: Metadata = {
-  title: "Meetup chat",
-  description: "Chatting app to meet people",
+  title: "Chatify",
+  description: "Connect, Communicate, Collaborate!",
 };
 
 export default function RootLayout({
