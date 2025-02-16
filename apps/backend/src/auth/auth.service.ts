@@ -1,16 +1,27 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nestjs-modules/mailer';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     private readonly jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) { }
+
+  /**
+  * Check if email already exists
+  */
+  private async checkEmailExists(email: string): Promise<boolean> {
+    const existingUser = await this.userModel.findOne({ email });
+    return !!existingUser;
+  }
 
   /**
    * Register a new user
@@ -21,23 +32,92 @@ export class AuthService {
     name: string,
     roles: string[] = ['user'],
   ): Promise<UserDocument> {
-    const existingUser = await this.userModel.findOne({ email });
+    const emailExists = await this.checkEmailExists(email);
 
-    if (existingUser) {
-      throw new UnauthorizedException('Email is already registered');
+    if (emailExists) {
+      throw new ConflictException('Email is already registered');
     }
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
+    const verificationToken = uuidv4();
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     const newUser = new this.userModel({
       email,
       password: hashedPassword,
       name,
       roles,
+      verificationToken,
+      verificationTokenExpires,
+      isVerified: false,
     });
+    console.log(newUser)
+    try {
+      await newUser.save();
+      await this.sendVerificationEmail(email, verificationToken);
+      return newUser;
+    } catch (error) {
+      if (error.code === 11000) { // MongoDB duplicate key error
+        throw new ConflictException('Email is already registered');
+      }
+      throw error;
+    }
+  }
 
-    return newUser.save();
+  async sendVerificationEmail(email: string, token: string) {
+    const verificationLink = `http://localhost:3000/auth/verify?token=${token}`;
+
+    try {
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Verify your email',
+        html: `<p>Click <a href="${verificationLink}">here</a> to verify your email.</p>`,
+      });
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      throw new Error('Failed to send verification email');
+    }
+  }
+
+  async verifyUser(token: string): Promise<UserDocument> {
+    const user = await this.userModel.findOne({ verificationToken: token });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid verification token');
+    }
+
+    if (user.verificationTokenExpires < new Date()) {
+      throw new UnauthorizedException('Verification token has expired');
+    }
+
+    user.isVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpires = null;
+    await user.save();
+
+    return user;
+  }
+
+  async resendVerificationEmail(email: string): Promise<void> {
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.isVerified) {
+      throw new ConflictException('User is already verified');
+    }
+
+    const verificationToken = uuidv4();
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpires = verificationTokenExpires;
+    await user.save();
+
+    await this.sendVerificationEmail(email, verificationToken);
   }
 
   /**

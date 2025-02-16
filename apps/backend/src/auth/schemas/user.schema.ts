@@ -17,7 +17,6 @@ export class User {
   @Prop({
     type: String,
     required: function (this: User) {
-      // Password is required only if the user is not registered via Google
       return !this.isGoogleUser;
     },
   })
@@ -29,8 +28,17 @@ export class User {
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
-  @Prop({ type: Boolean, default: false }) // Flag to indicate Google user registration
+  @Prop({ type: Boolean, default: false })
   isGoogleUser: boolean;
+
+  @Prop({ type: String, default: null, unique: true })
+  verificationToken: string;
+
+  @Prop({ type: Date, default: null })
+  verificationTokenExpires: Date;
+
+  @Prop({ type: Boolean, default: false })
+  isVerified: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

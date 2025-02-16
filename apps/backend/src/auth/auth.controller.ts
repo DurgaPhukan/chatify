@@ -41,6 +41,11 @@ class LoginDto {
   password: string;
 }
 
+class ResendVerificationEmailDto {
+  @IsEmail()
+  email: string;
+}
+
 class PaginationDto {
   @Type(() => Number)
   @IsInt()
@@ -56,7 +61,6 @@ class PaginationDto {
   @IsString()
   search?: string;
 }
-
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -132,7 +136,6 @@ export class AuthController {
     }
   }
 
-
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDto: RegisterDto) {
@@ -141,12 +144,43 @@ export class AuthController {
     try {
       const user = await this.authService.register(email, password, name, roles);
       return {
-        message: 'User registered successfully',
+        message: 'User registered successfully. Please check your email to verify your account.',
         user: { id: user._id, email: user.email, name: user.name },
       };
     } catch (error) {
       console.error('Error in Register:', error);
-      throw new BadRequestException('Registration failed');
+      throw new BadRequestException(`Registration failed`);
+    }
+  }
+
+  @Get('verify')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Query('token') token: string) {
+    try {
+      const user = await this.authService.verifyUser(token);
+      return {
+        message: 'Email verified successfully',
+        user: { id: user._id, email: user.email, name: user.name },
+      };
+    } catch (error) {
+      console.error('Error in Email Verification:', error);
+      throw new BadRequestException('Email verification failed');
+    }
+  }
+
+  @Post('resend-verification-email')
+  @HttpCode(HttpStatus.OK)
+  async resendVerificationEmail(@Body() resendVerificationEmailDto: ResendVerificationEmailDto) {
+    const { email } = resendVerificationEmailDto;
+
+    try {
+      await this.authService.resendVerificationEmail(email);
+      return {
+        message: 'Verification email resent successfully',
+      };
+    } catch (error) {
+      console.error('Error in Resend Verification Email:', error);
+      throw new BadRequestException('Failed to resend verification email');
     }
   }
 
