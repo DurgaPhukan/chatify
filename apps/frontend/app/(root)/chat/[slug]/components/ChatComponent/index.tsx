@@ -1,9 +1,9 @@
 "use client";
+import { useChat } from "@/app/components/Context/ContextProvider";
 import Header from "@/app/components/Header";
-import { getAuthToken } from "@/app/utils/getAuthToken";
+// import { useChat } from "@/app/Context/ContextProvider";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
 
 interface Message {
   id: string;
@@ -19,27 +19,10 @@ interface Message {
 const ChatPage = () => {
   const params = useParams();
   const { slug } = params;
-
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { state, joinRoom, sendMessage: sendMessageToSocket } = useChat();
   const [message, setMessage] = useState<string>("");
-  const [creatorId, setCreatorId] = useState<string | null>(null);
-  const [roomId, setRoomId] = useState<string>(slug as string);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null); // Ref for the messages container
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
-  const getCreatorIdFromToken = () => {
-    const authToken = localStorage.getItem("authToken");
-    if (authToken) {
-      try {
-        const payload = JSON.parse(atob(authToken.split(".")[1])); // Decode JWT payload
-        return payload.sub; // Assuming `creatorId` is in the token payload
-      } catch (error) {
-        console.error("Error decoding token:", error);
-        return null;
-      }
-    }
-    return null;
-  };
 
   // Scroll to the bottom when new messages arrive
   const scrollToBottom = () => {
@@ -48,76 +31,21 @@ const ChatPage = () => {
     }
   };
 
-  // Set creatorId from authToken on mount
+  // Join room when component mounts
   useEffect(() => {
-    const id = getCreatorIdFromToken();
-    if (id) {
-      setCreatorId(id);
-    } else {
-      router.push("/login");
+    if (slug) {
+      joinRoom(slug as string);
     }
-  }, []);
+  }, [slug]);
 
-  // Initialize Socket.IO connection
-  useEffect(() => {
-    const token = getAuthToken();
-    if (!token) {
-      window.location.href = "/login"
-      throw new Error("Authorization token is missing");
-    }
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    const isTokenExpired = payload.exp * 1000 < Date.now(); // `exp` is in seconds, convert to milliseconds
-
-    if (isTokenExpired) {
-      localStorage.removeItem("authToken");
-      window.location.href = "/login"
-    }
-
-    const newSocket = io(`${process.env.NEXT_PUBLIC_BACK_END_URL}/`, {
-      query: {
-        userId: payload.sub
-      },
-      withCredentials: true,
-    });
-    setSocket(newSocket);
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
-
-  // Join room and load chat history
-  useEffect(() => {
-    if (!socket || !roomId) return;
-
-    socket.emit("joinRoom", { roomId });
-
-    socket.on("chatHistory", (chatHistory: Message[]) => {
-      setMessages(chatHistory);
-    });
-
-    socket.on("newMessage", (newMessage: Message) => {
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    });
-
-    return () => {
-      socket.off("chatHistory");
-      socket.off("newMessage");
-    };
-  }, [socket, roomId]);
-
+  // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [state.messages]);
 
   const sendMessage = () => {
-    if (socket && message.trim() !== "" && creatorId) {
-      const payload = {
-        message,
-        creatorId,
-        roomId,
-      };
-      socket.emit("sendMessage", payload);
+    if (message.trim() !== "") {
+      sendMessageToSocket(message);
       setMessage("");
     }
   };
@@ -132,8 +60,8 @@ const ChatPage = () => {
     <div className="flex flex-col h-[56.2rem]">
       <div className="flex-grow overflow-y-auto bg-gray-100">
         <div className="mx-auto max-w-4xl">
-          {messages.map((msg, index) => {
-            const isMine = msg?.creatorId?._id === creatorId;
+          {state.messages.map((msg, index) => {
+            const isMine = msg?.creatorId?._id === state.creatorId;
             return (
               <div
                 key={msg.id || msg.message + index}

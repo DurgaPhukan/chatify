@@ -37,7 +37,7 @@ export class BroadcastsService {
   async findAll(): Promise<Broadcast[]> {
     try {
       const data = await this.broadcastModel.find().exec();
-      console.log("\n\n\n===>\n", JSON.stringify(data))
+      // console.log("\n\n\n===>\n", JSON.stringify(data))
       return data
     } catch (error) {
       throw new BadRequestException('Failed to retrieve broadcasts: ' + error.message);
